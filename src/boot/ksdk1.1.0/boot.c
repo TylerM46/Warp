@@ -3547,22 +3547,55 @@ printMMA8451Sensors(bool printHeadersAndCalibration, bool hexModeFlag,
 
 	int rttKey = -1;
 	
-#if (WARP_BUILD_ENABLE_DEVMMA8451Q)
 	numberOfConfigErrors += configureSensorMMA8451Q(
 		0x00, /* Payload: Disable FIFO */
 		0x01  /* Normal read 8bit, 800Hz, normal, active mode */
 	);
-#endif
 
-#if (WARP_BUILD_ENABLE_DEVMMA8451Q)
+	if (printHeadersAndCalibration)
+	{
+
+
 		warpPrint(" MMA8451 x, MMA8451 y, MMA8451 z,");
-#endif
+		warpPrint(" numberOfConfigErrors");
+		warpPrint("\n\n");
+	}
+	do
+	{
 
-#if (WARP_BUILD_ENABLE_DEVMMA8451Q)
-		printSensorDataMMA8451Q(hexModeFlag);
-#endif
 
+		printSensorDataMMA8451Q(hexModeFlag); //this is thing actually doing anything
+
+
+		warpPrint(" %u\n", numberOfConfigErrors);
+
+		// if (menuDelayBetweenEachRun > 0)
+		// {
+		// 	// while (OSA_TimeGetMsec() - timeAtStart < menuDelayBetweenEachRun)
+		// 	// {
+		// 	// }
+
+		// 	// timeAtStart = OSA_TimeGetMsec();
+		// 	status = warpSetLowPowerMode(kWarpPowerModeVLPS, menuDelayBetweenEachRun);
+		// 	if (status != kWarpStatusOK)
+		// 	{
+		// 		warpPrint("Failed to put into sleep: %d", status);
+		// 	}
+		// }
+
+		readingCount++;
+
+		rttKey = SEGGER_RTT_GetKey();
+
+		if (rttKey == 'q')
+		{
+			break;
+		}
+	}
+
+	while (loopForever);
 }
+
 
 void
 printAllSensors(bool printHeadersAndCalibration, bool hexModeFlag,
