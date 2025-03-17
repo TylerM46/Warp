@@ -2763,28 +2763,23 @@ main(void)
 			/*
 			 *	Dump all the sensor data in one go
 			 */
-			 case 'y':  //trm32
+			 
+			case 'y':  //trm32
 			{
-				warpPrint("\r\n\tSet the time delay between each reading in milliseconds (e.g., '1234')> ");
-				uint16_t menuDelayBetweenEachRun = read4digits();
-				warpPrint("\r\n\tDelay between read batches set to %d milliseconds.",
-						  menuDelayBetweenEachRun);
+			        OSA_TimeDelay(50);
+				    bool		hexModeFlag;
 
-
-					bool		hexModeFlag;
-
-					warpPrint("\r\n\tHex or converted mode? ('h' or 'c')> ");
-					key = warpWaitKey();
-					hexModeFlag = (key == 'h' ? true : false);
-					warpPrint("\n");
-					printMMA8451Sensors(true /* printHeadersAndCalibration */, hexModeFlag,
-								menuDelayBetweenEachRun, true /* loopForever */);
+				  warpPrint("\r\n\tDetermin orientation? (y/y) ");
+				  key = warpWaitKey();
+				  getposition();
 				
 
 				warpDisableI2Cpins();
 				break;
 			}
 
+			
+		
 			 
 			case 'z': //do not change
 			{
