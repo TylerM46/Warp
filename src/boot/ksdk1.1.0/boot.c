@@ -2097,6 +2097,9 @@ main(void)
 #endif
 
 		warpPrint("\r- 'x': disable SWD and spin for 10 secs.\n");
+		
+		warpPrint("\r- 'y': MMA read.\n"); //readaxis 
+		
 		warpPrint("\r- 'z': perpetually dump all sensor data.\n");
 
 		warpPrint("\rEnter selection> ");
@@ -2760,7 +2763,43 @@ main(void)
 			/*
 			 *	Dump all the sensor data in one go
 			 */
-			case 'z':
+			 case 'y':  //trm32
+			{
+				warpPrint("\r\n\tSet the time delay between each reading in milliseconds (e.g., '1234')> ");
+				uint16_t menuDelayBetweenEachRun = read4digits();
+				warpPrint("\r\n\tDelay between read batches set to %d milliseconds.",
+						  menuDelayBetweenEachRun);
+
+#if (WARP_BUILD_ENABLE_FLASH)
+				warpPrint("\r\n\tWrite sensor data to Flash? (1 or 0)>  ");
+				key = warpWaitKey();
+				warpPrint("\n");
+				bool gWarpWriteToFlash = (key == '1' ? true : false);
+
+				if (gWarpWriteToFlash)
+				{
+					warpPrint("\r\n\tWriting to flash. Press 'q' to exit back to menu\n");
+					writeAllSensorsToFlash(menuDelayBetweenEachRun, true /* loopForever */);
+				}
+				else
+#endif
+				{
+					bool		hexModeFlag;
+
+					warpPrint("\r\n\tHex or converted mode? ('h' or 'c')> ");
+					key = warpWaitKey();
+					hexModeFlag = (key == 'h' ? true : false);
+					warpPrint("\n");
+					printAllSensors(true /* printHeadersAndCalibration */, hexModeFlag,
+								menuDelayBetweenEachRun, true /* loopForever */);
+				}
+
+				warpDisableI2Cpins();
+				break;
+			}
+
+			 
+			case 'z': //do not change
 			{
 				warpPrint("\r\n\tSet the time delay between each reading in milliseconds (e.g., '1234')> ");
 				uint16_t menuDelayBetweenEachRun = read4digits();
