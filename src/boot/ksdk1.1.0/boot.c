@@ -2770,29 +2770,16 @@ main(void)
 				warpPrint("\r\n\tDelay between read batches set to %d milliseconds.",
 						  menuDelayBetweenEachRun);
 
-#if (WARP_BUILD_ENABLE_FLASH)
-				warpPrint("\r\n\tWrite sensor data to Flash? (1 or 0)>  ");
-				key = warpWaitKey();
-				warpPrint("\n");
-				bool gWarpWriteToFlash = (key == '1' ? true : false);
 
-				if (gWarpWriteToFlash)
-				{
-					warpPrint("\r\n\tWriting to flash. Press 'q' to exit back to menu\n");
-					writeAllSensorsToFlash(menuDelayBetweenEachRun, true /* loopForever */);
-				}
-				else
-#endif
-				{
 					bool		hexModeFlag;
 
 					warpPrint("\r\n\tHex or converted mode? ('h' or 'c')> ");
 					key = warpWaitKey();
 					hexModeFlag = (key == 'h' ? true : false);
 					warpPrint("\n");
-					printAllSensors(true /* printHeadersAndCalibration */, hexModeFlag,
+					printMMA8451Sensors(true /* printHeadersAndCalibration */, hexModeFlag,
 								menuDelayBetweenEachRun, true /* loopForever */);
-				}
+				
 
 				warpDisableI2Cpins();
 				break;
@@ -3540,6 +3527,41 @@ writeAllSensorsToFlash(int menuDelayBetweenEachRun, int loopForever)
 	}
 	while (loopForever);
 #endif
+}
+
+
+void
+printMMA8451Sensors(bool printHeadersAndCalibration, bool hexModeFlag,
+				int menuDelayBetweenEachRun, bool loopForever)
+{
+	WarpStatus status;
+	uint32_t timeAtStart = OSA_TimeGetMsec();
+
+	/*
+	 *	A 32-bit counter gives us > 2 years of before it wraps, even if sampling
+	 *at 60fps
+	 */
+	uint32_t readingCount		  = 0;
+	uint32_t numberOfConfigErrors = 0;
+
+
+	int rttKey = -1;
+	
+#if (WARP_BUILD_ENABLE_DEVMMA8451Q)
+	numberOfConfigErrors += configureSensorMMA8451Q(
+		0x00, /* Payload: Disable FIFO */
+		0x01  /* Normal read 8bit, 800Hz, normal, active mode */
+	);
+#endif
+
+#if (WARP_BUILD_ENABLE_DEVMMA8451Q)
+		warpPrint(" MMA8451 x, MMA8451 y, MMA8451 z,");
+#endif
+
+#if (WARP_BUILD_ENABLE_DEVMMA8451Q)
+		printSensorDataMMA8451Q(hexModeFlag);
+#endif
+
 }
 
 void
