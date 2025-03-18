@@ -2769,11 +2769,19 @@ main(void)
 			        OSA_TimeDelay(50);
 				    bool		hexModeFlag;
 
-				  warpPrint("\r\n\tDetermin orientation? (y/y) ");
+				  warpPrint("\r\n\tDetermin orientation? or print z data (y/z) ");
 				  key = warpWaitKey();
-				  getposition();
-				
+				  
+				  bool orientation = (key == 'y' ? true : false);
+                                  if(orientation){
+                                    decideorientation();
+                                  }
+                                  else{
+                                      printMMA8451Sensors(true /* printHeadersAndCalibration */, false,
+								0100, true /* loopForever */);
 
+                                  
+                                  }
 				warpDisableI2Cpins();
 				break;
 			}
@@ -3559,10 +3567,10 @@ printMMA8451Sensors(bool printHeadersAndCalibration, bool hexModeFlag,
 	{
 
 
-		printSensorDataMMA8451Q(hexModeFlag); //this is thing actually doing anything
+		myprintSensorDataMMA8451Q(hexModeFlag); //this is thing actually doing anything
 
 
-		warpPrint(" %u\n", numberOfConfigErrors);
+		//warpPrint(" %u\n", numberOfConfigErrors);
 
 		// if (menuDelayBetweenEachRun > 0)
 		// {
