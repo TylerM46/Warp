@@ -206,57 +206,6 @@ readSensorRegisterMMA8451Q(uint8_t deviceRegister, int numberOfBytes)
 }
 
 void
-myprintSensorDataMMA8451Q(bool hexModeFlag)
-{
-	uint16_t	readSensorRegisterValueLSB;
-	uint16_t	readSensorRegisterValueMSB;
-	int16_t		readSensorRegisterValueCombined;
-	WarpStatus	i2cReadStatus;
-
-	warpScaleSupplyVoltage(deviceMMA8451QState.operatingVoltageMillivolts);
-	/*
-	 *	From the MMA8451Q datasheet:
-	 *
-	 *		"A random read access to the LSB registers is not possible.
-	 *		Reading the MSB register and then the LSB register in sequence
-	 *		ensures that both bytes (LSB and MSB) belong to the same data
-	 *		sample, even if a new data sample arrives between reading the
-	 *		MSB and the LSB byte."
-	 *
-	 *	We therefore do 2-byte read transactions, for each of the registers.
-	 *	We could also improve things by doing a 6-byte read transaction.
-	 */
-
-	i2cReadStatus = readSensorRegisterMMA8451Q(kWarpSensorOutputRegisterMMA8451QOUT_Z_MSB, 2 /* numberOfBytes */);
-	readSensorRegisterValueMSB = deviceMMA8451QState.i2cBuffer[0];
-	readSensorRegisterValueLSB = deviceMMA8451QState.i2cBuffer[1];
-	readSensorRegisterValueCombined = ((readSensorRegisterValueMSB & 0xFF) << 6) | (readSensorRegisterValueLSB >> 2);
-
-	/*
-	 *	Sign extend the 14-bit value based on knowledge that upper 2 bit are 0:
-	 */
-	readSensorRegisterValueCombined = (readSensorRegisterValueCombined ^ (1 << 13)) - (1 << 13);
-
-	if (i2cReadStatus != kWarpStatusOK)
-	{
-		warpPrint(" ----,");
-	}
-	else
-	{
-		if (hexModeFlag)
-		{
-			warpPrint(" 0x%02x 0x%02x,", readSensorRegisterValueMSB, readSensorRegisterValueLSB);
-		}
-		else
-		{
-			warpPrint(" %d \n", readSensorRegisterValueCombined);
-		}
-	}
-}
-
-
-
-void
 printSensorDataMMA8451Q(bool hexModeFlag)
 {
 	uint16_t	readSensorRegisterValueLSB;
@@ -357,6 +306,116 @@ printSensorDataMMA8451Q(bool hexModeFlag)
 		}
 	}
 }
+
+
+void
+MyOrientate(bool hexModeFlag)
+{
+	uint16_t	readSensorRegisterValueLSB;
+	uint16_t	readSensorRegisterValueMSB;
+	int16_t		readSensorRegisterValueCombined;
+	int16_t		tops = 0;
+	WarpStatus	i2cReadStatus;
+
+	warpScaleSupplyVoltage(deviceMMA8451QState.operatingVoltageMillivolts);
+	/*
+	 *	From the MMA8451Q datasheet:
+	 *
+	 *		"A random read access to the LSB registers is not possible.
+	 *		Reading the MSB register and then the LSB register in sequence
+	 *		ensures that both bytes (LSB and MSB) belong to the same data
+	 *		sample, even if a new data sample arrives between reading the
+	 *		MSB and the LSB byte."
+	 *
+	 *	We therefore do 2-byte read transactions, for each of the registers.
+	 *	We could also improve things by doing a 6-byte read transaction.
+	 */
+	 for (int i=0; i<100; i++){
+	      OSA_TimeDelay(100);
+	      i2cReadStatus = readSensorRegisterMMA8451Q(kWarpSensorOutputRegisterMMA8451QOUT_Z_MSB, 2 /* numberOfBytes */);
+	      readSensorRegisterValueMSB = deviceMMA8451QState.i2cBuffer[0];
+	      readSensorRegisterValueLSB = deviceMMA8451QState.i2cBuffer[1];
+	      readSensorRegisterValueCombined = ((readSensorRegisterValueMSB & 0xFF) << 6) | (readSensorRegisterValueLSB >> 2);
+
+	      /*
+	       *	Sign extend the 14-bit value based on knowledge that upper 2 bit are 0:
+	       */
+	      readSensorRegisterValueCombined = (readSensorRegisterValueCombined ^ (1 << 13)) - (1 << 13);
+
+	      if (i2cReadStatus != kWarpStatusOK)
+	      {
+		      warpPrint(" ----,");
+	      }
+	      else
+	      {
+
+		      
+	    
+		    //warpPrint(" %d \n", readSensorRegisterValueCombined);
+		    if (readSensorRegisterValueCombined > 0) {
+			tops += 1;
+		    }    
+		       
+	      }
+        }
+        //warpPrint("Number of tops: %d \n", tops);
+        if (tops>49){
+          warpPrint("The board is in the correct orientation; with a confidence of %d %. \n", tops);
+        }
+        else{
+          tops = 100 - tops;
+          warpPrint("The board is upside-down; with a confidence of %d %. \n", tops);
+        }
+        
+        if(tops < 95){
+          warpPrint("The board was likely still in motion during readings.\n");
+        }
+}
+
+
+
+void
+myprintSensorDataMMA8451Q(bool hexModeFlag)
+{
+	uint16_t	readSensorRegisterValueLSB;
+	uint16_t	readSensorRegisterValueMSB;
+	int16_t		readSensorRegisterValueCombined;
+	WarpStatus	i2cReadStatus;
+
+	warpScaleSupplyVoltage(deviceMMA8451QState.operatingVoltageMillivolts);
+	/*
+	 *	From the MMA8451Q datasheet:
+	 *
+	 *		"A random read access to the LSB registers is not possible.
+	 *		Reading the MSB register and then the LSB register in sequence
+	 *		ensures that both bytes (LSB and MSB) belong to the same data
+	 *		sample, even if a new data sample arrives between reading the
+	 *		MSB and the LSB byte."
+	 *
+	 *	We therefore do 2-byte read transactions, for each of the registers.
+	 *	We could also improve things by doing a 6-byte read transaction.
+	 */
+	 for (int i=0; i<100; i++){
+	      OSA_TimeDelay(10);
+	      i2cReadStatus = readSensorRegisterMMA8451Q(kWarpSensorOutputRegisterMMA8451QOUT_Z_MSB, 2 /* numberOfBytes */);
+	      readSensorRegisterValueMSB = deviceMMA8451QState.i2cBuffer[0];
+	      readSensorRegisterValueLSB = deviceMMA8451QState.i2cBuffer[1];
+	      readSensorRegisterValueCombined = ((readSensorRegisterValueMSB & 0xFF) << 6) | (readSensorRegisterValueLSB >> 2);
+
+	      /*
+	       *	Sign extend the 14-bit value based on knowledge that upper 2 bit are 0:
+	       */
+	      readSensorRegisterValueCombined = (readSensorRegisterValueCombined ^ (1 << 13)) - (1 << 13);
+
+
+
+
+			      warpPrint(" %d \n", readSensorRegisterValueCombined);
+		      
+	      
+        }
+}
+
 
 uint8_t
 appendSensorDataMMA8451Q(uint8_t* buf)
