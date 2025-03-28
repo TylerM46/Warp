@@ -2769,7 +2769,7 @@ main(void)
 			        OSA_TimeDelay(50);
 				    bool		hexModeFlag;
 
-				  warpPrint("\r\n\tDetermin orientation? or print z data (y/z) ");
+				  warpPrint("\r\n\tDetermin orientation (y)? or anyother key to print z data");
 				  key = warpWaitKey();
 				  
 				  bool orientation = (key == 'y' ? true : false);
@@ -2781,6 +2781,11 @@ main(void)
 
                                   
                                   }
+                                  
+                                  warpPrint("\r\n\tPress any key to continue.");
+				  key = warpWaitKey();
+                                  bool wait = (key == 'y' ? true : false);
+                                  
 				warpDisableI2Cpins();
 				break;
 			}
