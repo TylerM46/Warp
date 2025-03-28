@@ -2774,11 +2774,10 @@ main(void)
 				  
 				  bool orientation = (key == 'y' ? true : false);
                                   if(orientation){
-                                    decideorientation();
+                                    MyOrientate(false);
                                   }
                                   else{
-                                      printMMA8451Sensors(true /* printHeadersAndCalibration */, false,
-								0100, true /* loopForever */);
+                                      myprintSensorDataMMA8451Q(false);
 
                                   
                                   }
@@ -3531,74 +3530,6 @@ writeAllSensorsToFlash(int menuDelayBetweenEachRun, int loopForever)
 	while (loopForever);
 #endif
 }
-
-
-void
-printMMA8451Sensors(bool printHeadersAndCalibration, bool hexModeFlag,
-				int menuDelayBetweenEachRun, bool loopForever)
-{
-	WarpStatus status;
-	uint32_t timeAtStart = OSA_TimeGetMsec();
-
-	/*
-	 *	A 32-bit counter gives us > 2 years of before it wraps, even if sampling
-	 *at 60fps
-	 */
-	uint32_t readingCount		  = 0;
-	uint32_t numberOfConfigErrors = 0;
-
-
-	int rttKey = -1;
-	
-	numberOfConfigErrors += configureSensorMMA8451Q(
-		0x00, /* Payload: Disable FIFO */
-		0x01  /* Normal read 8bit, 800Hz, normal, active mode */
-	);
-
-	if (printHeadersAndCalibration)
-	{
-
-
-		warpPrint(" MMA8451 x, MMA8451 y, MMA8451 z,");
-		warpPrint(" numberOfConfigErrors");
-		warpPrint("\n\n");
-	}
-	do
-	{
-
-
-		myprintSensorDataMMA8451Q(hexModeFlag); //this is thing actually doing anything
-
-
-		//warpPrint(" %u\n", numberOfConfigErrors);
-
-		// if (menuDelayBetweenEachRun > 0)
-		// {
-		// 	// while (OSA_TimeGetMsec() - timeAtStart < menuDelayBetweenEachRun)
-		// 	// {
-		// 	// }
-
-		// 	// timeAtStart = OSA_TimeGetMsec();
-		// 	status = warpSetLowPowerMode(kWarpPowerModeVLPS, menuDelayBetweenEachRun);
-		// 	if (status != kWarpStatusOK)
-		// 	{
-		// 		warpPrint("Failed to put into sleep: %d", status);
-		// 	}
-		// }
-
-		readingCount++;
-
-		rttKey = SEGGER_RTT_GetKey();
-
-		if (rttKey == 'q')
-		{
-			break;
-		}
-	}
-
-	while (loopForever);
-}
-
 
 void
 printAllSensors(bool printHeadersAndCalibration, bool hexModeFlag,
